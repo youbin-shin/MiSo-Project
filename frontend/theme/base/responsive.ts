@@ -1,4 +1,4 @@
-import { size } from 'theme/constants';
+import { size } from '@/theme/constants';
 
 export const responsive = {
   mobile: `screen and (max-width: ${size.mobile}px)`,

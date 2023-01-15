@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components';
+import { TColors } from '@/types/theme/palette';
 
 export type ButtonProps = {
   /** 버튼 색상 */
@@ -17,9 +18,9 @@ const colorStyles = css<ButtonProps>`
   ${({ color, outline, isTransparent }) => {
     if (outline)
       return css`
-        border: 1px solid ${({ theme }) => theme.colors[color ?? 'gray30']};
+        border: 1px solid ${({ theme }) => theme.colors[(color ?? 'gray30') as TColors]};
         background: ${isTransparent ? 'transparent' : 'white'};
-        color: ${({ theme }) => color ?? theme.colors.gray90};
+        color: ${({ theme }) => color ?? theme.colors.gray05};
         &:not(:disabled):hover {
           background: ${({ theme }) => color ?? theme.colors.gray10};
           color: white;
@@ -30,7 +31,7 @@ const colorStyles = css<ButtonProps>`
           /* filter: brightness(${color ? '200%' : '100%'}); */
         }
         &:disabled {
-          color: ${({ theme }) => color ?? theme.colors.gray40};
+          color: ${({ theme }) => color ?? theme.colors.gray05};
           border: 1px solid ${({ theme }) => color ?? theme.colors.gray30};
           opacity: 0.5;
         }
@@ -38,18 +39,18 @@ const colorStyles = css<ButtonProps>`
 
     return css`
       border: none;
-      background: ${({ theme }) => color ?? theme.colors.purple50};
+      background: ${({ theme }) => color ?? theme.colors.black};
       color: white;
       &:not(:disabled):hover {
-        background: ${({ theme }) => color ?? theme.colors.purple60};
+        background: ${({ theme }) => color ?? theme.colors.black};
         filter: brightness(${color ? '90%' : '100%'});
       }
       &:not(:disabled):active {
-        background: ${({ theme }) => color ?? theme.colors.purple60};
+        background: ${({ theme }) => color ?? theme.colors.black};
         filter: brightness(${color ? '80%' : '100%'});
       }
       &:disabled {
-        background-color: ${({ theme }) => theme.colors.gray40};
+        background-color: ${({ theme }) => theme.colors.black};
       }
     `;
   }}
@@ -78,6 +79,7 @@ export const Button = styled.button<ButtonProps>`
   &:disabled {
     cursor: not-allowed !important;
   }
+
   ${fullWidthStyle}
   ${colorStyles}
 
