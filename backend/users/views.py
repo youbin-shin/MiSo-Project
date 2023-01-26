@@ -4,8 +4,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from knox.models import AuthToken
 from django.http import QueryDict
-from .serializers import CreateUserSerializer, UserSerializer, LoginUserSerializer
+from .serializers import CreateUserSerializer, UserSerializer
 from .models import User
+import requests
 
 
 class SignupAPI(generics.GenericAPIView):
@@ -25,22 +26,6 @@ class SignupAPI(generics.GenericAPIView):
             }
         )
 
-class SigninAPI(generics.GenericAPIView):
-    serializer_class = LoginUserSerializer
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data
-        return Response(
-            {
-                'user': UserSerializer(
-                    user, context=self.get_serializer_context()
-                ).data,
-                'token': AuthToken.objects.create(user)[1],
-            }
-        )
-
 
 class UserAPI(generics.RetrieveAPIView):
     permissions_classes = [permissions.IsAuthenticated]
@@ -54,3 +39,36 @@ class UserAPI(generics.RetrieveAPIView):
         user = User.objects.get(nickname=nickname)
         serializer = UserSerializer(user)
         return Response(serializer.data)
+
+
+class KakaoSignInAPI(generics.GenericAPIView):
+
+    def post(self, request):
+        try:
+            access_token = request.data["access_token"]
+            kakao_user_data = requests.get(
+                "https://kapi.kakao.com/v2/user/me", 
+                headers={"Authorization": f"Bearer {access_token}"}
+            ).json()
+
+            user_info = kakao_user_data["kakao_account"]
+            email = user_info["email"]
+            if User.objects.filter(email=email).exists():
+                user = User.objects.get(email=email)
+            else:
+                user = User.objects.create(
+                        email=email, 
+                        nickname=user_info["profile"]["nickname"], 
+                        profile_image_url=user_info["profile"]["profile_image_url"]
+                    )
+            token = AuthToken.objects.create(user)[1]
+        except KeyError:
+            return Response({"message": "KeyError"})
+        except Exception as e:
+            print(e)
+        return Response (
+            {
+                'user' : UserSerializer(user).data,
+                'token': token,
+            }
+        )

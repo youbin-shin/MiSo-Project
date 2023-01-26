@@ -6,14 +6,13 @@ class UserManager(BaseUserManager):
 
     use_in_migrations = True    
 
-    def create_user(self, email, nickname, password=None):        
+    def create_user(self, email, nickname):        
         if not email :            
             raise ValueError('must have user email')        
         user = self.model(            
             email = self.normalize_email(email),            
             nickname = nickname        
         )        
-        user.set_password(password)        
         user.save(using=self._db)        
         return user
 
@@ -34,13 +33,12 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser,PermissionsMixin):    
 
     objects = UserManager()
-    username = None
     email = models.EmailField(verbose_name='email', unique=True)
     nickname = models.CharField(
         max_length=20,
-        null=False,
-        unique=True
+        null=False
     )
+    profile_image_url = models.CharField(max_length=256)
     date_joined = models.DateTimeField(auto_now_add=True)     
     USERNAME_FIELD = 'email'    # 유저 아이디를 이메일로 변경
     REQUIRED_FIELDS = ['nickname']  # 필수 입력 값 설정
