@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Album
+from .models import Album, Track
 
 
 class AlbumSerializer(serializers.ModelSerializer):
@@ -17,7 +17,32 @@ class AlbumSerializer(serializers.ModelSerializer):
 
 class AlbumDetailSerializer(serializers.ModelSerializer):
     user_nickname = serializers.StringRelatedField(source='user.nickname', read_only=True)
+    created_at = serializers.DateTimeField(format='%Y-%m-%d')
+    tracks = serializers.SerializerMethodField()
 
     class Meta:
         model = Album
-        fields = ('id', 'title', 'user_nickname', 'cover_image_url', 'd_day', 'join_count', 'created_at')
+        fields = ('id', 'title', 'user_nickname', 'cover_image_url', 'd_day', 'join_count', 'tracks', 'created_at')
+    
+    def get_tracks(self, album):
+        tracks = Track.objects.filter(album=album).order_by('seq')
+        tracks = TrackSerializer(tracks, many=True).data
+        return tracks
+
+
+class TrackCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Track
+        fields = '__all__'
+
+    # def validate(self, data):
+    #     if data.get('status') in Track.Status.get_values():
+    #         raise serializers.ValidationError()
+    #     if data.get('seq') > 10:
+    #         raise serializers.ValidationError()
+
+class TrackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Track
+        fields = ('id', 'album', 'user_id', 'nickname', 'title', 'audio', 'duration', 'seq', 'status')
